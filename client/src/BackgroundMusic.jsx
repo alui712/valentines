@@ -10,6 +10,7 @@ export const BackgroundMusic = forwardRef(function BackgroundMusic(_, ref) {
   const containerRef = useRef(null)
   const playerRef = useRef(null)
   const initRef = useRef(false)
+  const startRequestedRef = useRef(false)
 
   useEffect(() => {
     const container = containerRef.current
@@ -34,6 +35,14 @@ export const BackgroundMusic = forwardRef(function BackgroundMusic(_, ref) {
           rel: 0,
           showinfo: 0,
         },
+        events: {
+          onReady: (event) => {
+            if (startRequestedRef.current) {
+              event.target.setVolume(20)
+              event.target.playVideo()
+            }
+          },
+        },
       })
     }
 
@@ -45,7 +54,11 @@ export const BackgroundMusic = forwardRef(function BackgroundMusic(_, ref) {
         tag.src = 'https://www.youtube.com/iframe_api'
         document.head.appendChild(tag)
       }
-      window.onYouTubeIframeAPIReady = createPlayer
+      const prev = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        prev?.()
+        createPlayer()
+      }
     }
 
     return () => {
@@ -56,13 +69,14 @@ export const BackgroundMusic = forwardRef(function BackgroundMusic(_, ref) {
 
   useImperativeHandle(ref, () => ({
     start: () => {
+      startRequestedRef.current = true
       const tryPlay = (attempt = 0) => {
         const player = playerRef.current
         if (player?.playVideo) {
           player.setVolume?.(20)
           player.playVideo()
-        } else if (attempt < 20) {
-          setTimeout(() => tryPlay(attempt + 1), 300)
+        } else if (attempt < 50) {
+          setTimeout(() => tryPlay(attempt + 1), 200)
         }
       }
       tryPlay()
