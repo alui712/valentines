@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import axios from 'axios'
 import Game from './Game'
 import { BackgroundMusic } from './BackgroundMusic'
 
@@ -9,7 +8,6 @@ const NO_BUTTON_EDGE_MARGIN = 20
 
 function App() {
   const [score, setScore] = useState(0)
-  const [memory, setMemory] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [winScreen, setWinScreen] = useState(false)
   const [winPhase, setWinPhase] = useState('message')
@@ -378,19 +376,8 @@ function App() {
     setReplayKey((k) => k + 1)
   }
 
-  const handleScoreUpdate = async () => {
-    const newScore = score + 1
-    setScore(newScore)
-
-    if (newScore % 5 === 0) {
-      try {
-        const response = await axios.get('/api/get-memory')
-        setMemory(response.data.message)
-        setTimeout(() => setMemory(null), 4000)
-      } catch (error) {
-        console.error("Backend offline?", error)
-      }
-    }
+  const handleScoreUpdate = () => {
+    setScore((s) => s + 1)
   }
 
   const handleGameClick = () => {
@@ -443,11 +430,6 @@ function App() {
         {!isPlaying && !overlayActive && <p className="controls-hint">Click the screen to start aiming!</p>}
       </div>
       {!overlayActive && <div className="crosshair"></div>}
-      {memory && (
-        <div className="memory-popup">
-          ❤️ {memory}
-        </div>
-      )}
       <div className="ground-fog" aria-hidden="true" />
       <div className="edge-glow" aria-hidden="true" />
       <div style={{ width: '100vw', height: '100vh' }} onClick={handleGameClick}>
