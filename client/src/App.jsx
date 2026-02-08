@@ -42,6 +42,7 @@ function App() {
   const hasShownScore90Ref = useRef(false)
   const [noButtonOffset, setNoButtonOffset] = useState({ x: 0, y: 0 })
   const [replayKey, setReplayKey] = useState(0)
+  const [musicPlaying, setMusicPlaying] = useState(false)
   const noButtonRef = useRef(null)
   const musicRef = useRef()
   const [timeOfDay, setTimeOfDay] = useState(0.5)
@@ -329,7 +330,11 @@ function App() {
   const handleValentineYes = () => {
     setShowStartScreen(false)
     setShowAdventureScreen(true)
+  }
+
+  const handlePlayMusic = () => {
     musicRef.current?.start()
+    setMusicPlaying(true)
   }
 
   const handleAdventureStart = () => {
@@ -374,6 +379,7 @@ function App() {
     setScore90Fading(false)
     setNoButtonOffset({ x: 0, y: 0 })
     setReplayKey((k) => k + 1)
+    setMusicPlaying(false)
   }
 
   const handleScoreUpdate = () => {
@@ -428,6 +434,17 @@ function App() {
         </div>
         <h1 className="score-display">Score: {score}</h1>
         {!isPlaying && !overlayActive && <p className="controls-hint">Click the screen to start aiming!</p>}
+        {!overlayActive && !winScreen && (
+          <button
+            type="button"
+            className="music-float-btn"
+            onClick={handlePlayMusic}
+            title="Play music"
+            aria-label="Play music"
+          >
+            ♪
+          </button>
+        )}
       </div>
       {!overlayActive && <div className="crosshair"></div>}
       <div className="ground-fog" aria-hidden="true" />
@@ -484,9 +501,19 @@ function App() {
             <p className="adventure-screen-text">
               You better. Since you make even the most boring days feel like an adventure, I am going to bring you on an adventure. Good Luck!
             </p>
-            <button type="button" className="start-screen-btn" onClick={handleAdventureStart}>
-              Let&apos;s go!
-            </button>
+            <div className="adventure-screen-buttons">
+              <button type="button" className="start-screen-btn" onClick={handleAdventureStart}>
+                Let&apos;s go!
+              </button>
+              <button
+                type="button"
+                className="start-screen-btn music-btn"
+                onClick={handlePlayMusic}
+                style={{ opacity: musicPlaying ? 0.6 : 1 }}
+              >
+                {musicPlaying ? '♪ Music on' : '♪ Play music'}
+              </button>
+            </div>
           </div>
         </div>
       )}
