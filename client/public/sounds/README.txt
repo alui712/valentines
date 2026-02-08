@@ -1,6 +1,6 @@
-Add lo-fi.mp3 here for background music.
+Add music.mp3 here for background music (plays when you click "Let's go!").
 
-Free lo-fi tracks (download and rename to lo-fi.mp3):
-- Pixabay: https://pixabay.com/music/search/lo-fi/
+Download a free MP3 and rename it to music.mp3:
+- Pixabay: https://pixabay.com/music/
 - Mixkit: https://mixkit.co/free-stock-music/
 - FreePD: https://freepd.com/

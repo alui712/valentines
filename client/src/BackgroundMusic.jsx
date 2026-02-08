@@ -1,132 +1,50 @@
-import { useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
+import { useRef, useImperativeHandle, forwardRef } from 'react'
 
-const VIDEO_ID = '5kOCOdnLKwg'
+// Put your music file at client/public/sounds/music.mp3
+// Download free music from pixabay.com/music or mixkit.co/free-stock-music
+const MUSIC_URL = '/sounds/music.mp3'
 
 /**
- * Plays YouTube video as background music. Hidden player, loops until browser closes.
- * Call start() from a user click handler (browser autoplay policy).
+ * Plays background music via HTML5 Audio. Call start() from a user click handler.
  */
 export const BackgroundMusic = forwardRef(function BackgroundMusic(_, ref) {
-  const containerRef = useRef(null)
-  const playerRef = useRef(null)
-  const initRef = useRef(false)
-  const startRequestedRef = useRef(false)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container || initRef.current) return
-
-    const createPlayer = () => {
-      if (!window.YT?.Player || !containerRef.current) return
-      initRef.current = true
-      playerRef.current = new window.YT.Player(containerRef.current, {
-        height: '1',
-        width: '1',
-        videoId: VIDEO_ID,
-        playerVars: {
-          autoplay: 0,
-          loop: 1,
-          playlist: VIDEO_ID,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          rel: 0,
-          showinfo: 0,
-        },
-        events: {
-          onReady: (event) => {
-            if (startRequestedRef.current) {
-              event.target.setVolume(20)
-              event.target.playVideo()
-            }
-          },
-        },
-      })
-    }
-
-    if (window.YT?.Player) {
-      createPlayer()
-    } else {
-      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
-        const tag = document.createElement('script')
-        tag.src = 'https://www.youtube.com/iframe_api'
-        document.head.appendChild(tag)
-      }
-      const prev = window.onYouTubeIframeAPIReady
-      window.onYouTubeIframeAPIReady = () => {
-        prev?.()
-        createPlayer()
-      }
-    }
-
-    return () => {
-      if (playerRef.current?.destroy) playerRef.current.destroy()
-      initRef.current = false
-    }
-  }, [])
+  const audioRef = useRef(null)
 
   useImperativeHandle(ref, () => ({
     start: () => {
-      startRequestedRef.current = true
-      const tryPlay = (attempt = 0) => {
-        const player = playerRef.current
-        if (player?.playVideo) {
-          player.setVolume?.(20)
-          player.playVideo()
-        } else if (attempt < 50) {
-          setTimeout(() => tryPlay(attempt + 1), 200)
-        }
-      }
-      tryPlay()
+      const audio = audioRef.current
+      if (!audio) return
+      audio.volume = 0.2
+      audio.loop = true
+      audio.play().catch(() => {})
     },
     setVolume: (level) => {
-      const player = playerRef.current
-      if (player?.setVolume) {
-        player.setVolume(Math.round(Math.max(0, Math.min(100, level))))
-      }
+      const audio = audioRef.current
+      if (audio) audio.volume = Math.max(0, Math.min(1, level / 100))
     },
     reset: () => {
-      const player = playerRef.current
-      if (player?.pauseVideo) player.pauseVideo()
-      if (player?.seekTo) player.seekTo(0, true)
+      const audio = audioRef.current
+      if (audio) {
+        audio.pause()
+        audio.currentTime = 0
+      }
     },
     fadeVolume: (targetLevel, durationMs) => {
-      const player = playerRef.current
-      if (!player?.setVolume) return
+      const audio = audioRef.current
+      if (!audio) return
       const start = performance.now()
-      const getCurrentVolume = () => {
-        const v = player.getVolume?.()
-        return typeof v === 'number' ? v : 20
-      }
-      const startLevel = getCurrentVolume()
+      const startVol = audio.volume
+      const targetVol = Math.max(0, Math.min(1, targetLevel / 100))
       const animate = (now) => {
         const elapsed = now - start
         const t = Math.min(1, elapsed / durationMs)
         const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
-        const level = startLevel + (targetLevel - startLevel) * eased
-        player.setVolume(Math.round(Math.max(0, Math.min(100, level))))
+        audio.volume = startVol + (targetVol - startVol) * eased
         if (t < 1) requestAnimationFrame(animate)
       }
       requestAnimationFrame(animate)
     },
   }))
 
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        right: 0,
-        width: 1,
-        height: 1,
-        opacity: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        zIndex: -1,
-      }}
-    />
-  )
+  return <audio ref={audioRef} src={MUSIC_URL} preload="auto" />
 })
