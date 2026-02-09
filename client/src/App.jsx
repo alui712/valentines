@@ -42,6 +42,10 @@ function App() {
   const hasShownScore90Ref = useRef(false)
   const [noButtonOffset, setNoButtonOffset] = useState({ x: 0, y: 0 })
   const [replayKey, setReplayKey] = useState(0)
+  const [gardenDone, setGardenDone] = useState(false)
+  const [crabsDone, setCrabsDone] = useState(false)
+  const [fireworkDone, setFireworkDone] = useState(false)
+  const [constellationDone, setConstellationDone] = useState(false)
   const noButtonRef = useRef(null)
   const musicRef = useRef()
   const [timeOfDay, setTimeOfDay] = useState(0.5)
@@ -374,6 +378,10 @@ function App() {
     setScore90Fading(false)
     setNoButtonOffset({ x: 0, y: 0 })
     setReplayKey((k) => k + 1)
+    setGardenDone(false)
+    setCrabsDone(false)
+    setFireworkDone(false)
+    setConstellationDone(false)
   }
 
   const handleScoreUpdate = () => {
@@ -412,11 +420,11 @@ function App() {
           <section className="left-panel-section">
             <h3 className="left-panel-heading">To Do</h3>
             <ul className="todo-list">
-              <li>Make a garden with the floor</li>
-              <li>Interact with a crab</li>
-              <li>Experience the fireworks at night</li>
-              <li>Connect the stars in the sky at night</li>
-              <li>Reach a score of 100</li>
+              <li className={gardenDone ? 'todo-done' : ''}>Make a garden with the floor</li>
+              <li className={crabsDone ? 'todo-done' : ''}>Interact with a crab</li>
+              <li className={fireworkDone ? 'todo-done' : ''}>Experience the fireworks at night</li>
+              <li className={constellationDone ? 'todo-done' : ''}>Connect the stars in the sky at night</li>
+              <li className={score >= 100 ? 'todo-done' : ''}>Reach a score of 100</li>
             </ul>
           </section>
           <section className="left-panel-section">
@@ -441,6 +449,10 @@ function App() {
           timeOfDay={timeOfDay}
           startScreenActive={overlayActive}
           winScreenActive={winScreen}
+          onGardenComplete={() => setGardenDone(true)}
+          onCrabsComplete={() => setCrabsDone(true)}
+          onFireworkComplete={() => setFireworkDone(true)}
+          onConstellationComplete={() => setConstellationDone(true)}
           score10MessageActive={showScore10Message}
           score20MessageActive={showScore20Message}
           score30MessageActive={showScore30Message}

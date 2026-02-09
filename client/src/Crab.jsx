@@ -7,7 +7,7 @@ const CRAB_COLOR = '#e85d04'
 const CRAB_DARK = '#d00000'
 const CRAB_SCALE = 3
 
-export function Crab({ position = [0, 0, 0], speed = 1 }) {
+export function Crab({ position = [0, 0, 0], speed = 1, onInteract }) {
   const [showHeart, setShowHeart] = useState(false)
   const [pos, setPos] = useState(() => [...position])
   const [rotationY, setRotationY] = useState(0)
@@ -20,6 +20,7 @@ export function Crab({ position = [0, 0, 0], speed = 1 }) {
     e.stopPropagation()
     if (jumpPhaseRef.current > 0) return
     playCrabWheeeSound()
+    onInteract?.()
     jumpPhaseRef.current = 0.001
     jumpStartRef.current = { x: pos[0], z: pos[2], rot: rotationY }
     setShowHeart(true)

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Line, Html } from '@react-three/drei'
 import * as THREE from 'three'
@@ -134,10 +134,18 @@ function Star({ position, onClick, isActivated, index, allGlow, isNext, onPointe
   )
 }
 
-export function Constellation() {
+export function Constellation({ onComplete }) {
   const [clickedOrder, setClickedOrder] = useState([])
   const allConnected = clickedOrder.length >= HEART_POINTS.length
   const groupRef = useRef()
+  const completeCalledRef = useRef(false)
+
+  useEffect(() => {
+    if (allConnected && !completeCalledRef.current) {
+      completeCalledRef.current = true
+      onComplete?.()
+    }
+  }, [allConnected, onComplete])
 
   const handleStarClick = useCallback((index) => {
     setClickedOrder((prev) => {

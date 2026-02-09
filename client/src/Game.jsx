@@ -136,7 +136,7 @@ const MAX_TARGET_SCALE = 2
 
 const MEGA_HEART_POSITION = [0, 3, -12]
 
-export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5, startScreenActive = false, winScreenActive = false, score10MessageActive = false, score20MessageActive = false, score30MessageActive = false, score40MessageActive = false, score50MessageActive = false, score60MessageActive = false, score70MessageActive = false, score80MessageActive = false, score90MessageActive = false }) {
+export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5, startScreenActive = false, winScreenActive = false, onGardenComplete, onCrabsComplete, onFireworkComplete, onConstellationComplete, score10MessageActive = false, score20MessageActive = false, score30MessageActive = false, score40MessageActive = false, score50MessageActive = false, score60MessageActive = false, score70MessageActive = false, score80MessageActive = false, score90MessageActive = false }) {
   const [targets, setTargets] = useState([])
   const [tracers, setTracers] = useState([])
   const [explosions, setExplosions] = useState([])
@@ -144,6 +144,11 @@ export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5,
   const [targetScale, setTargetScale] = useState(MAX_TARGET_SCALE)
   const [showMegaHeart, setShowMegaHeart] = useState(false)
   const [plants, setPlants] = useState([])
+  const crabInteractCountRef = useRef(0)
+  const gardenCompleteCalledRef = useRef(false)
+  const crabsCompleteCalledRef = useRef(false)
+  const fireworkCompleteCalledRef = useRef(false)
+  const constellationCompleteCalledRef = useRef(false)
 
   useEffect(() => {
     Promise.all(
@@ -241,8 +246,30 @@ export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5,
   }, [addTracer])
 
   const handleFloorClick = useCallback((point) => {
-    setPlants((prev) => [...prev, createPlantData(point)])
-  }, [])
+    setPlants((prev) => {
+      const next = [...prev, createPlantData(point)]
+      if (next.length >= 10 && !gardenCompleteCalledRef.current) {
+        gardenCompleteCalledRef.current = true
+        onGardenComplete?.()
+      }
+      return next
+    })
+  }, [onGardenComplete])
+
+  const handleCrabInteract = useCallback(() => {
+    crabInteractCountRef.current += 1
+    if (crabInteractCountRef.current >= 3 && !crabsCompleteCalledRef.current) {
+      crabsCompleteCalledRef.current = true
+      onCrabsComplete?.()
+    }
+  }, [onCrabsComplete])
+
+  const handleFireworkExplode = useCallback(() => {
+    if (timeOfDay >= 0.8 && !fireworkCompleteCalledRef.current) {
+      fireworkCompleteCalledRef.current = true
+      onFireworkComplete?.()
+    }
+  }, [onFireworkComplete, timeOfDay])
 
   const isNight = timeOfDay > 0.85
 
@@ -282,7 +309,7 @@ export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5,
           scale={targetScale}
         />
       ))}
-      {!startScreenActive && isNight && <Constellation />}
+      {!startScreenActive && isNight && <Constellation onComplete={onConstellationComplete} />}
       {!startScreenActive && (
         <>
           {[
@@ -294,7 +321,7 @@ export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5,
             [15, -2, 24],
             [-12, -2, 27],
           ].map((pos, i) => (
-            <Crab key={i} position={pos} speed={0.8 + (i % 3) * 0.2} />
+            <Crab key={i} position={pos} speed={0.8 + (i % 3) * 0.2} onInteract={handleCrabInteract} />
           ))}
         </>
       )}
@@ -308,7 +335,7 @@ export default function Game({ score = 0, onScoreUpdate, onWin, timeOfDay = 0.5,
           sizeScale={plant.sizeScale}
         />
       ))}
-      <Fireworks dayTime={timeOfDay} />
+      <Fireworks dayTime={timeOfDay} onExplosion={handleFireworkExplode} />
       <EffectComposer>
         <Bloom luminanceThreshold={0.5} intensity={1.5} luminanceSmoothing={0.4} />
       </EffectComposer>

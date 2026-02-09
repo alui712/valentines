@@ -108,7 +108,7 @@ function Rocket({ id, startPos, targetY, color, onExplode }) {
   )
 }
 
-export function Fireworks({ dayTime }) {
+export function Fireworks({ dayTime, onExplosion }) {
   const [rockets, setRockets] = useState([])
   const [explosions, setExplosions] = useState([])
   const nextLaunchRef = useRef(0)
@@ -141,13 +141,14 @@ export function Fireworks({ dayTime }) {
     if (explodedIdsRef.current.has(rocketId)) return
     explodedIdsRef.current.add(rocketId)
     playFireworkExplodeSound()
+    onExplosion?.()
     const pos = [position.x, position.y, position.z]
     setExplosions((prev) => [
       ...prev,
       { id: Math.random(), position: pos, color },
     ])
     setRockets((prev) => prev.filter((r) => r.id !== rocketId))
-  }, [])
+  }, [onExplosion])
 
   const removeExplosion = useCallback((explosionId) => {
     setExplosions((prev) => prev.filter((e) => e.id !== explosionId))
