@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { playStarDingSound } from './starSound'
 import { useFrame } from '@react-three/fiber'
 import { Line, Html } from '@react-three/drei'
 import * as THREE from 'three'
@@ -152,6 +153,14 @@ export function Constellation({ onComplete }) {
       const nextExpected = CLICK_ORDER[prev.length]
       if (prev.includes(index)) return prev
       if (index !== nextExpected) return prev
+      playStarDingSound(prev.length, HEART_POINTS.length)
+      if (prev.length === HEART_POINTS.length - 1) {
+        try {
+          const audio = new Audio('/sounds/constellation-complete.mp3')
+          audio.volume = 0.25
+          audio.play().catch(() => {})
+        } catch (_) {}
+      }
       return [...prev, index]
     })
   }, [])
